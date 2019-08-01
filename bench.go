@@ -192,12 +192,28 @@ func Bench(
 			} else if opts.Quiet {
 				fmt.Fprintf(opts.Stdout, " requests per second\n")
 			} else {
+
+				var totalDur time.Duration
+				var totalCount int64
+				for i := 0; i < len(durs); i++ {
+					for j := 0; j < len(durs[i]); j++ {
+						dur := durs[i][j]
+						if dur == -1 {
+							continue
+						}
+						totalDur += dur
+						totalCount++
+					}
+				}
+
 				fmt.Fprintf(opts.Stdout, "\r====== %s ======\n", name)
 				fmt.Fprintf(opts.Stdout, "  %d requests completed in %.2f seconds\n", opts.Requests, float64(real)/float64(time.Second))
 				fmt.Fprintf(opts.Stdout, "  %d parallel clients\n", opts.Clients)
 				fmt.Fprintf(opts.Stdout, "  %d bytes payload\n", totalPayload/opts.Requests)
+				fmt.Fprintf(opts.Stdout, "  avg latency: %.3f milliseconds\n", float64(int64(totalDur)/totalCount)/float64(time.Millisecond))
 				fmt.Fprintf(opts.Stdout, "  keep alive: 1\n")
 				fmt.Fprintf(opts.Stdout, "\n")
+
 				var limit time.Duration
 				var lastper float64
 				for {
