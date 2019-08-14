@@ -2,7 +2,6 @@ package redbench
 
 import (
 	"bufio"
-	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -14,7 +13,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"golang.org/x/time/rate"
+	"github.com/juju/ratelimit"
 )
 
 func readResp(rd *bufio.Reader, n int, opts *Options) error {
@@ -59,7 +58,7 @@ type Options struct {
 	CSV      bool
 	Stdout   io.Writer
 	Stderr   io.Writer
-	Limter   *rate.Limiter
+	Limter   *ratelimit.Bucket
 }
 
 // DefaultsOptions are the default options used by the Bench() function.
@@ -146,7 +145,7 @@ func Bench(
 				var buf []byte
 				rd := bufio.NewReader(conn)
 				for i := 0; i < crequests; i += opts.Pipeline {
-					opts.Limter.WaitN(context.Background(), opts.Pipeline)
+					opts.Limter.Wait(int64(opts.Pipeline))
 
 					n := opts.Pipeline
 					if i+n > crequests {
