@@ -145,7 +145,9 @@ func Bench(
 				var buf []byte
 				rd := bufio.NewReader(conn)
 				for i := 0; i < crequests; i += opts.Pipeline {
-					opts.Limter.Wait(int64(opts.Pipeline))
+					if opts.Limter != nil {
+						opts.Limter.Wait(int64(opts.Pipeline))
+					}
 
 					n := opts.Pipeline
 					if i+n > crequests {
