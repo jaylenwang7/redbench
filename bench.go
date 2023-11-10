@@ -84,6 +84,7 @@ func flattenArray(durs [][]time.Duration) []float64 {
 			durations = append(durations, float64(dur))
 		}
 	}
+	return durations
 }
 
 func calculatePercentile(durations []float64, percentile float64) float64 {
