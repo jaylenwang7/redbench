@@ -241,19 +241,14 @@ func Bench(
 				fmt.Fprintf(opts.Stdout, "  keep alive: 1\n")
 				fmt.Fprintf(opts.Stdout, "\n")
 
-				var limit time.Duration
-				var lastper float64
-				for {
-					// Calculate 50, 90, 95, and 99 percentiles for durs
-					// and print them out.
-					pers := []float64{50, 90, 95, 99}
-					for _, per := range pers {
-						durations := flattenArray(durs)
-						sort.Float64s(durations)
-						percentile := calculatePercentile(durations, per)
-						fmt.Fprintf(opts.Stdout, "%.2fth Percentile: %.3f\n", per, float64(percentile)/float64(time.Millisecond))
-					}
-
+				// Calculate 50, 90, 95, and 99 percentiles for durs
+				// and print them out.
+				pers := []float64{50, 90, 95, 99}
+				for _, per := range pers {
+					durations := flattenArray(durs)
+					sort.Float64s(durations)
+					percentile := calculatePercentile(durations, per)
+					fmt.Fprintf(opts.Stdout, "%.2fth Percentile: %.3f\n", per, float64(percentile)/float64(time.Millisecond))
 				}
 				fmt.Fprintf(opts.Stdout, "%.2f requests per second\n\n", realrps)
 			}
