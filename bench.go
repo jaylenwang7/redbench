@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"math"
+	// "math"
 	"net"
 	"os"
 	"strconv"
@@ -73,12 +73,17 @@ var DefaultOptions = &Options{
 	Stderr:   os.Stderr,
 }
 
-func flattenArray(durs [][]float64) []float64 {
+func flattenArray(durs [][]time.Duration) []float64 {
 	var durations []float64
-	for _, row := range durs {
-		durations = append(durations, row...)
+	for i := 0; i < len(durs); i++ {
+		for j := 0; j < len(durs[i]); j++ {
+			dur := durs[i][j]
+			if dur == -1 {
+				continue
+			}
+			durations = append(durations, float64(dur))
+		}
 	}
-	return durations
 }
 
 func calculatePercentile(durations []float64, percentile float64) float64 {
