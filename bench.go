@@ -246,6 +246,7 @@ func Bench(
 						sort.Float64s(durations)
 						percentile := calculatePercentile(durations, per)
 						fmt.Fprintf(opts.Stdout, "%.2fth Percentile: %.3f\n", per, float64(percentile)/float64(time.Millisecond))
+					}
 
 				}
 				fmt.Fprintf(opts.Stdout, "%.2f requests per second\n\n", realrps)
