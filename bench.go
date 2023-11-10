@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"sync/atomic"
 	"time"
+	"sort"
 
 	"github.com/juju/ratelimit"
 )
@@ -70,6 +71,19 @@ var DefaultOptions = &Options{
 	CSV:      false,
 	Stdout:   os.Stdout,
 	Stderr:   os.Stderr,
+}
+
+func flattenArray(durs [][]float64) []float64 {
+	var durations []float64
+	for _, row := range durs {
+		durations = append(durations, row...)
+	}
+	return durations
+}
+
+func calculatePercentile(durations []float64, percentile float64) float64 {
+	index := int(float64(len(durations)-1) * percentile / 100.0)
+	return durations[index]
 }
 
 // Bench performs a benchmark on the server at the specified address.
@@ -224,29 +238,15 @@ func Bench(
 				var limit time.Duration
 				var lastper float64
 				for {
-					limit += time.Millisecond
-					var hits, count int
-					for i := 0; i < len(durs); i++ {
-						for j := 0; j < len(durs[i]); j++ {
-							dur := durs[i][j]
-							if dur == -1 {
-								continue
-							}
-							if dur < limit {
-								hits++
-							}
-							count++
-						}
-					}
-					per := float64(hits) / float64(count)
-					if math.Floor(per*10000) == math.Floor(lastper*10000) {
-						continue
-					}
-					lastper = per
-					fmt.Fprintf(opts.Stdout, "%.2f%% <= %d milliseconds\n", per*100, (limit-time.Millisecond)/time.Millisecond)
-					if per == 1.0 {
-						break
-					}
+					// Calculate 50, 90, 95, and 99 percentiles for durs
+					// and print them out.
+					pers := []float64{50, 90, 95, 99}
+					for _, per := range pers {
+						durations := flattenArray(durs)
+						sort.Float64s(durations)
+						percentile := calculatePercentile(durations, per)
+						fmt.Fprintf(opts.Stdout, "%.2fth Percentile: %.3f\n", per, float64(percentile)/float64(time.Millisecond))
+
 				}
 				fmt.Fprintf(opts.Stdout, "%.2f requests per second\n\n", realrps)
 			}
